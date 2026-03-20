@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'auth/auth_service.dart';
 import 'data/notes_repository.dart';
 import 'services/note_service.dart';
-import 'screens/notes_list_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,15 +15,24 @@ void main() async {
 
   // Injection simple des dépendances
   final repository = NotesRepository();
-  final service = NoteService(repository);
+  final noteService = NoteService(repository);
+  final authService = AuthService();
 
-  runApp(MyApp(service: service));
+  runApp(MyApp(
+    noteService: noteService,
+    authService: authService,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  final NoteService service;
+  final NoteService noteService;
+  final AuthService authService;
 
-  const MyApp({super.key, required this.service});
+  const MyApp({
+    super.key,
+    required this.noteService,
+    required this.authService,
+  });
 
   // Couleurs globales (identiques aux écrans)
   static const Color primaryColor = Color(0xFF5B8DEF);
@@ -37,7 +47,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
 
-        //  Schéma de couleurs global
         colorScheme: ColorScheme.fromSeed(
           seedColor: primaryColor,
           background: bgColor,
@@ -45,7 +54,6 @@ class MyApp extends StatelessWidget {
 
         scaffoldBackgroundColor: bgColor,
 
-        // AppBar cohérente avec le design
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -58,7 +66,6 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(color: textPrimary),
         ),
 
-        //  Boutons
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryColor,
@@ -74,7 +81,6 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
 
-        //  Inputs (TextField)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
@@ -82,7 +88,7 @@ class MyApp extends StatelessWidget {
           const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.black12),
+            borderSide: const BorderSide(color: Colors.black12),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
@@ -90,7 +96,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        // ✍Texte
         textTheme: const TextTheme(
           bodyMedium: TextStyle(color: textPrimary),
           titleMedium: TextStyle(
@@ -99,7 +104,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: NotesListScreen(service: service),
+      home: LoginScreen(
+        auth: authService,
+        noteService: noteService,
+      ),
     );
   }
 }
